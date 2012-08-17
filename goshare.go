@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 )
 
 type FileMonitor struct {
-	f http.File
+	f          http.File
 	downloaded float64
 }
 
@@ -48,16 +48,23 @@ type FileSystemMonitor string
 func (fsm FileSystemMonitor) Open(name string) (http.File, error) {
 	fmt.Printf("FileSystemMonitor started: %s\n", name)
 	f, err := http.Dir(fsm).Open(name)
-	return &FileMonitor{f,0.00}, err
+	return &FileMonitor{f, 0.00}, err
 }
 
 func main() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Print(err)
+	}
+
 	var address = flag.String("a", "127.0.0.1:6060", "IP address and port to listen on")
+	var directory = flag.String("d", cwd, "Target folder for sharing. Defaults to current working directory")
 	flag.Parse()
-	http.Handle("/", http.FileServer(FileSystemMonitor("C:/share")))
+	http.Handle("/", http.FileServer(FileSystemMonitor(*directory)))
 
 	fmt.Printf("Binded to address: %s\n", *address)
-	err := http.ListenAndServe(*address, nil)
+	fmt.Printf("Sharing          : %s\n", *directory)
+	err = http.ListenAndServe(*address, nil)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)

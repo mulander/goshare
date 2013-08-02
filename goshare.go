@@ -27,36 +27,20 @@ func (fd *FileDownload) Progress(bytes int) {
 }
 
 type FileMonitor struct {
-	f        http.File
+	http.File
 	download FileDownload
 }
 
-func (fm *FileMonitor) Close() error {
-	return fm.f.Close()
-}
-
-func (fm FileMonitor) Stat() (os.FileInfo, error) {
-	return fm.f.Stat()
-}
-
-func (fm FileMonitor) Readdir(count int) ([]os.FileInfo, error) {
-	return fm.f.Readdir(count)
-}
-
 func (fm *FileMonitor) Read(b []byte) (int, error) {
-	bytes, err := fm.f.Read(b)
+	bytes, err := fm.File.Read(b)
 	if fm.download.size == 0.00 {
-		fileInfo, _ := fm.f.Stat()
+		fileInfo, _ := fm.File.Stat()
 		fm.download.size = float64(fileInfo.Size())
 		fm.download.id = <-download_id
 	}
 	fm.download.Progress(bytes)
 	downloads <- fm.download
 	return bytes, err
-}
-
-func (fm FileMonitor) Seek(offset int64, whence int) (int64, error) {
-	return fm.f.Seek(offset, whence)
 }
 
 type FileSystemMonitor string

@@ -1,0 +1,1 @@
+goshare is a simple go HTTP file server for local network use focused on monitoring downloads in real time.
